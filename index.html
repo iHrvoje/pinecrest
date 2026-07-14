@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Website Discovery Questionnaire — Pinecrest Group</title>
+<style>
+  :root {
+    --bg: #0b1220;            /* dark blue */
+    --panel: #1c1f26;         /* dark grey */
+    --panel-2: #24272f;       /* lighter grey */
+    --border: #343945;
+    --text: #eef1f6;
+    --muted: #98a0b0;
+    --accent: #ffc72c;        /* brand yellow */
+    --accent-ink: #1a1500;
+    --accent-soft: rgba(255, 199, 44, 0.14);
+    --radius: 12px;
+    --maxw: 760px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 48px 20px 120px; }
+
+  header.hero { margin-bottom: 40px; }
+  .kicker { color: var(--accent); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: 12px; margin-bottom: 12px; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; }
+  .intro { color: var(--muted); font-size: 15px; max-width: 620px; }
+  .intro strong { color: var(--text); }
+
+  .progress-bar { position: sticky; top: 0; z-index: 20; height: 4px; background: var(--border); margin: 0 -20px 32px; }
+  .progress-fill { height: 100%; width: 0; background: var(--accent); transition: width .2s ease; }
+
+  section.block { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 22px; }
+  .block-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .block-num { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .block-title { font-size: 18px; font-weight: 600; margin: 0; }
+
+  .q { margin-top: 22px; }
+  .q:first-of-type { margin-top: 18px; }
+  .q > label.qlabel { display: block; font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .qnum { color: var(--muted); font-weight: 700; margin-right: 6px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 2px 0 10px; }
+
+  input[type="text"], textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 11px 13px; font: inherit; font-size: 14px; resize: vertical;
+  }
+  input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  textarea { min-height: 80px; }
+
+  .options { display: grid; gap: 8px; margin-top: 6px; }
+  .options.cols { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .opt {
+    display: flex; align-items: center; gap: 10px; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 14px; transition: border-color .15s, background .15s;
+  }
+  .opt:hover { border-color: #3a3a44; }
+  .opt input { accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+  .opt.checked { border-color: var(--accent); background: var(--accent-soft); }
+
+  .inline-other { margin-top: 8px; }
+  .triple { display: grid; gap: 8px; }
+  .triple .num { display: flex; align-items: center; gap: 10px; }
+  .triple .num span { color: var(--accent); font-weight: 700; width: 18px; flex: none; }
+
+  /* rating matrix */
+  .rate-matrix { display: grid; gap: 6px; margin-top: 8px; }
+  .rate-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
+  .rate-label { font-size: 14px; }
+  .rate-opts { display: flex; gap: 14px; }
+  .rate-opts label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .rate-opts input { accent-color: var(--accent); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  button {
+    font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 13px 22px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text); transition: transform .05s, background .15s, border-color .15s;
+  }
+  button:hover { border-color: #3a3a44; }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  button.primary:hover { background: #ffd452; border-color: #ffd452; }
+  .saved-note { color: var(--muted); font-size: 12px; margin-top: 14px; }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 27px; }
+    section.block { padding: 20px; }
+    .wrap { padding: 32px 16px 100px; }
+    .rate-row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Website Discovery</div>
+    <h1>Website Discovery Questionnaire</h1>
+    <p class="intro">This questionnaire helps us understand your <strong>business, audience, goals, and priorities</strong> before we begin shaping the new website experience for <strong>Pinecrest Group</strong>. Please keep your answers concise — there are no right or wrong answers. Your progress saves automatically in this browser.</p>
+  </header>
+
+  <form id="qform" autocomplete="off">
+
+    <!-- 01 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">01</span><h2 class="block-title">Company &amp; Business</h2></div>
+      <div class="q">
+        <label class="qlabel" for="q1"><span class="qnum">1.</span>In one sentence, how would you describe Pinecrest Group?</label>
+        <input type="text" id="q1" name="q1" />
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">2.</span>Which best describes your business?</label>
+        <div class="hint">Select all that apply.</div>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q2" value="Real Estate Development"><span>Real Estate Development</span></label>
+          <label class="opt"><input type="checkbox" name="q2" value="Investment Management"><span>Investment Management</span></label>
+          <label class="opt"><input type="checkbox" name="q2" value="Property Management"><span>Property Management</span></label>
+          <label class="opt"><input type="checkbox" name="q2" value="Construction"><span>Construction</span></label>
+          <label class="opt"><input type="checkbox" name="q2" value="Asset Management"><span>Asset Management</span></label>
+          <label class="opt"><input type="checkbox" name="q2" value="Multiple business units"><span>Multiple business units</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q2_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">3.</span>Which services should be presented on the website?</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q3" value="Investment"><span>Investment</span></label>
+          <label class="opt"><input type="checkbox" name="q3" value="Development"><span>Development</span></label>
+          <label class="opt"><input type="checkbox" name="q3" value="Construction"><span>Construction</span></label>
+          <label class="opt"><input type="checkbox" name="q3" value="Advisory"><span>Advisory</span></label>
+          <label class="opt"><input type="checkbox" name="q3" value="Property Management"><span>Property Management</span></label>
+          <label class="opt"><input type="checkbox" name="q3" value="Capital Markets"><span>Capital Markets</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q3_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q4"><span class="qnum">4.</span>What differentiates Pinecrest from competitors?</label>
+        <textarea id="q4" name="q4"></textarea>
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">5.</span>What are the three things every visitor should understand within the first 10 seconds?</label>
+        <div class="triple">
+          <div class="num"><span>1.</span><input type="text" name="q5_1" /></div>
+          <div class="num"><span>2.</span><input type="text" name="q5_2" /></div>
+          <div class="num"><span>3.</span><input type="text" name="q5_3" /></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">02</span><h2 class="block-title">Website Goals</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">6.</span>What is the primary goal of the new website?</label>
+        <div class="hint">Choose up to three.</div>
+        <div class="options cols" data-limit="3" data-group="q6">
+          <label class="opt"><input type="checkbox" name="q6" value="Generate new business"><span>Generate new business</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Build trust & credibility"><span>Build trust &amp; credibility</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Attract investors"><span>Attract investors</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Generate qualified leads"><span>Generate qualified leads</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Showcase portfolio"><span>Showcase portfolio</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Present company capabilities"><span>Present company capabilities</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Recruitment"><span>Recruitment</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Brand awareness"><span>Brand awareness</span></label>
+          <label class="opt"><input type="checkbox" name="q6" value="Media & PR"><span>Media &amp; PR</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q6_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q7"><span class="qnum">7.</span>How will you measure success after launch?</label>
+        <textarea id="q7" name="q7"></textarea>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">03</span><h2 class="block-title">Target Audience</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">8.</span>Who is the primary audience?</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q8" value="Institutional Investors"><span>Institutional Investors</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Private Investors"><span>Private Investors</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Developers"><span>Developers</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Brokers"><span>Brokers</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Commercial Clients"><span>Commercial Clients</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Residential Clients"><span>Residential Clients</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Partners"><span>Partners</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Municipalities"><span>Municipalities</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Architects"><span>Architects</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Contractors"><span>Contractors</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Future Employees"><span>Future Employees</span></label>
+          <label class="opt"><input type="checkbox" name="q8" value="Media"><span>Media</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q8_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">9.</span>Is your business primarily:</label>
+        <div class="options cols">
+          <label class="opt"><input type="radio" name="q9" value="B2B"><span>B2B</span></label>
+          <label class="opt"><input type="radio" name="q9" value="B2C"><span>B2C</span></label>
+          <label class="opt"><input type="radio" name="q9" value="Both"><span>Both</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q10"><span class="qnum">10.</span>What information is each audience looking for?</label>
+        <textarea id="q10" name="q10"></textarea>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">04</span><h2 class="block-title">Brand Positioning</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">11.</span>How should visitors describe Pinecrest after leaving the website?</label>
+        <div class="hint">Choose five.</div>
+        <div class="options cols" data-limit="5" data-group="q11">
+          <label class="opt"><input type="checkbox" name="q11" value="Trusted"><span>Trusted</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Premium"><span>Premium</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Innovative"><span>Innovative</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Professional"><span>Professional</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Established"><span>Established</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Modern"><span>Modern</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Transparent"><span>Transparent</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Ambitious"><span>Ambitious</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Visionary"><span>Visionary</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Reliable"><span>Reliable</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Bold"><span>Bold</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Human"><span>Human</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Sophisticated"><span>Sophisticated</span></label>
+          <label class="opt"><input type="checkbox" name="q11" value="Technical"><span>Technical</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q11_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q12"><span class="qnum">12.</span>Are there any misconceptions about your company you'd like the website to correct?</label>
+        <textarea id="q12" name="q12"></textarea>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">05</span><h2 class="block-title">Homepage Priorities</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">13.</span>Which homepage sections are most important?</label>
+        <div class="hint">Rate each: Essential / Important / Nice to Have.</div>
+        <div class="rate-matrix" id="rateMatrix"></div>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q14"><span class="qnum">14.</span>Is there anything missing from the list?</label>
+        <textarea id="q14" name="q14"></textarea>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">06</span><h2 class="block-title">Calls To Action</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">15.</span>What actions do you want visitors to take?</label>
+        <div class="hint">Select all that apply.</div>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q15" value="Schedule a meeting"><span>Schedule a meeting</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Request investment information"><span>Request investment information</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Contact sales"><span>Contact sales</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Submit a project"><span>Submit a project</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Download brochure"><span>Download brochure</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="View portfolio"><span>View portfolio</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Book consultation"><span>Book consultation</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Careers"><span>Careers</span></label>
+          <label class="opt"><input type="checkbox" name="q15" value="Subscribe"><span>Subscribe</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q15_other" placeholder="Other…" />
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q16"><span class="qnum">16.</span>Which CTA should receive the highest visibility?</label>
+        <input type="text" id="q16" name="q16" />
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">07</span><h2 class="block-title">Portfolio &amp; Projects</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">17.</span>How important is showcasing completed projects?</label>
+        <div class="options cols">
+          <label class="opt"><input type="radio" name="q17" value="Critical"><span>Critical</span></label>
+          <label class="opt"><input type="radio" name="q17" value="Important"><span>Important</span></label>
+          <label class="opt"><input type="radio" name="q17" value="Nice to have"><span>Nice to have</span></label>
+          <label class="opt"><input type="radio" name="q17" value="Not important"><span>Not important</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">18.</span>What information should every project include?</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q18" value="Images"><span>Images</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Project description"><span>Project description</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Location"><span>Location</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Services provided"><span>Services provided</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Timeline"><span>Timeline</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Investment value"><span>Investment value</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Results"><span>Results</span></label>
+          <label class="opt"><input type="checkbox" name="q18" value="Team"><span>Team</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q18_other" placeholder="Other…" />
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">08</span><h2 class="block-title">Content Strategy</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">19.</span>Which content types will you regularly publish?</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q19" value="News"><span>News</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Market insights"><span>Market insights</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Investment updates"><span>Investment updates</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Press releases"><span>Press releases</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Projects"><span>Projects</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Blog"><span>Blog</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Careers"><span>Careers</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Events"><span>Events</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Videos"><span>Videos</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Case studies"><span>Case studies</span></label>
+          <label class="opt"><input type="checkbox" name="q19" value="Reports"><span>Reports</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">20.</span>Will your team manage content internally after launch?</label>
+        <div class="options cols">
+          <label class="opt"><input type="radio" name="q20" value="Yes"><span>Yes</span></label>
+          <label class="opt"><input type="radio" name="q20" value="No"><span>No</span></label>
+          <label class="opt"><input type="radio" name="q20" value="Partially"><span>Partially</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">09</span><h2 class="block-title">Functionality</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">21.</span>Which functionality do you expect?</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q21" value="CMS"><span>CMS</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Blog"><span>Blog</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Project filtering"><span>Project filtering</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Interactive map"><span>Interactive map</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Search"><span>Search</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Multi-language"><span>Multi-language</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Investor Resources"><span>Investor Resources</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Team pages"><span>Team pages</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Forms"><span>Forms</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Newsletter"><span>Newsletter</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Careers"><span>Careers</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Downloads"><span>Downloads</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Animations"><span>Animations</span></label>
+          <label class="opt"><input type="checkbox" name="q21" value="Custom interactions"><span>Custom interactions</span></label>
+        </div>
+        <input type="text" class="inline-other" name="q21_other" placeholder="Other…" />
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">10</span><h2 class="block-title">Visual Direction</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">22.</span>List three websites you admire.</label>
+        <div class="hint">Please include links if possible.</div>
+        <div class="triple">
+          <div class="num"><span>1.</span><input type="text" name="q22_1" placeholder="https://…" /></div>
+          <div class="num"><span>2.</span><input type="text" name="q22_2" placeholder="https://…" /></div>
+          <div class="num"><span>3.</span><input type="text" name="q22_3" placeholder="https://…" /></div>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">23.</span>What visual direction feels right?</label>
+        <div class="hint">Choose any.</div>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q23" value="Minimal"><span>Minimal</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Luxury"><span>Luxury</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Corporate"><span>Corporate</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Editorial"><span>Editorial</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Architectural"><span>Architectural</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Bold"><span>Bold</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Elegant"><span>Elegant</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="High-tech"><span>High-tech</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Premium"><span>Premium</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Modern"><span>Modern</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Timeless"><span>Timeless</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Data-driven"><span>Data-driven</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Interactive"><span>Interactive</span></label>
+          <label class="opt"><input type="checkbox" name="q23" value="Motion-first"><span>Motion-first</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q24"><span class="qnum">24.</span>Are there visual styles you definitely want to avoid?</label>
+        <textarea id="q24" name="q24"></textarea>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">11</span><h2 class="block-title">Technical</h2></div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">25.</span>Do you already have:</label>
+        <div class="options cols">
+          <label class="opt"><input type="checkbox" name="q25" value="Brand Guidelines"><span>Brand Guidelines</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Logo"><span>Logo</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Photography"><span>Photography</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Drone Footage"><span>Drone Footage</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Project Renders"><span>Project Renders</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Videos"><span>Videos</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Copywriting"><span>Copywriting</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="CMS"><span>CMS</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="Analytics"><span>Analytics</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="SEO Strategy"><span>SEO Strategy</span></label>
+          <label class="opt"><input type="checkbox" name="q25" value="None"><span>None</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="q26"><span class="qnum">26.</span>Are there integrations we should know about?</label>
+        <textarea id="q26" name="q26"></textarea>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">12</span><h2 class="block-title">Timeline &amp; Budget</h2></div>
+      <div class="q">
+        <label class="qlabel" for="q27"><span class="qnum">27.</span>Do you have a target launch date?</label>
+        <input type="text" id="q27" name="q27" placeholder="e.g. Q4 2026" />
+      </div>
+      <div class="q">
+        <label class="qlabel"><span class="qnum">28.</span>Is there an allocated budget range for the project?</label>
+        <div class="options cols">
+          <label class="opt"><input type="radio" name="q28" value="Under $25k"><span>Under $25k</span></label>
+          <label class="opt"><input type="radio" name="q28" value="$25k–50k"><span>$25k–50k</span></label>
+          <label class="opt"><input type="radio" name="q28" value="$50k–100k"><span>$50k–100k</span></label>
+          <label class="opt"><input type="radio" name="q28" value="$100k+"><span>$100k+</span></label>
+          <label class="opt"><input type="radio" name="q28" value="Prefer not to say"><span>Prefer not to say</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">13</span><h2 class="block-title">Final Notes</h2></div>
+      <div class="q">
+        <label class="qlabel" for="q29"><span class="qnum">29.</span>Is there anything else we should know before starting?</label>
+        <textarea id="q29" name="q29"></textarea>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="block">
+      <div class="block-head"><span class="block-num">✱</span><h2 class="block-title">Contact</h2></div>
+      <div class="q"><label class="qlabel" for="c_name">Name</label><input type="text" id="c_name" name="c_name" /></div>
+      <div class="q"><label class="qlabel" for="c_position">Position</label><input type="text" id="c_position" name="c_position" /></div>
+      <div class="q"><label class="qlabel" for="c_company">Company</label><input type="text" id="c_company" name="c_company" /></div>
+      <div class="q"><label class="qlabel" for="c_email">Email</label><input type="text" id="c_email" name="c_email" /></div>
+      <div class="q"><label class="qlabel" for="c_phone">Phone</label><input type="text" id="c_phone" name="c_phone" /></div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="primary" id="submitBtn">Submit</button>
+      <button type="button" id="clearBtn">Clear form</button>
+    </div>
+    <p class="saved-note" id="sendStatus" style="min-height:16px;"></p>
+    <p class="saved-note" id="savedNote">Answers autosave in this browser.</p>
+  </form>
+</div>
+
+<script>
+  // Paste your Google Apps Script /exec URL here (see the generic doPost script).
+  const SHEET_WEBHOOK_URL = "";
+  const STORAGE_KEY = "pinecrest_discovery_v1";
+  const form = document.getElementById("qform");
+
+  const SECTIONS = ["Hero","About","Services","Investment Philosophy","Portfolio","Projects","Capabilities","Industries","Process","Leadership","News","Testimonials","Partners","Careers","Contact","CTA"];
+  const RATINGS = ["Essential","Important","Nice to Have"];
+
+  // Build rating matrix (Q13)
+  (function () {
+    const wrap = document.getElementById("rateMatrix");
+    SECTIONS.forEach((s) => {
+      const key = "r_" + s.replace(/[^a-z0-9]+/gi, "_");
+      const row = document.createElement("div");
+      row.className = "rate-row";
+      const opts = RATINGS.map(r => `<label><input type="radio" name="${key}" value="${r}"><span>${r}</span></label>`).join("");
+      row.innerHTML = `<span class="rate-label">${s}</span><div class="rate-opts">${opts}</div>`;
+      wrap.appendChild(row);
+    });
+  })();
+
+  // Checkbox limits + visual state
+  document.querySelectorAll(".opt input").forEach((inp) => {
+    inp.addEventListener("change", () => {
+      const group = inp.closest("[data-group]");
+      if (group && inp.checked) {
+        const limit = +group.dataset.limit;
+        if (group.querySelectorAll("input:checked").length > limit) { inp.checked = false; alert(`Please choose up to ${limit}.`); }
+      }
+      inp.closest(".opt").classList.toggle("checked", inp.checked);
+      if (inp.type === "radio") {
+        document.querySelectorAll(`input[name="${inp.name}"]`).forEach(r => r.closest(".opt")?.classList.toggle("checked", r.checked));
+      }
+      save(); updateProgress();
+    });
+  });
+
+  // ---- Value helpers ----
+  function v(name) {
+    const el = form.elements[name];
+    if (!el) return "";
+    if (el.value !== undefined && el.type !== undefined) return (el.value || "").trim();
+    return (el.value || "").trim(); // RadioNodeList.value = checked value
+  }
+  function multi(name, otherName) {
+    const arr = [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(e => e.value);
+    if (otherName) { const o = (form.elements[otherName]?.value || "").trim(); if (o) arr.push(o); }
+    return arr.join(", ");
+  }
+  function joinLines(names) { return names.map(n => (form.elements[n]?.value || "").trim()).filter(Boolean).join("\n"); }
+  function ratings() {
+    return SECTIONS.map(s => {
+      const key = "r_" + s.replace(/[^a-z0-9]+/gi, "_");
+      const val = form.elements[key]?.value || "";
+      return val ? `${s}: ${val}` : null;
+    }).filter(Boolean).join("\n");
+  }
+
+  // ---- Column definitions (order = columns in the sheet) ----
+  function buildColumns(submittedAt) {
+    return [
+      ["Submitted", submittedAt],
+      ["Name", v("c_name")], ["Position", v("c_position")], ["Company", v("c_company")],
+      ["Email", v("c_email")], ["Phone", v("c_phone")],
+      ["1. Describe Pinecrest", v("q1")],
+      ["2. Business type", multi("q2", "q2_other")],
+      ["3. Services on site", multi("q3", "q3_other")],
+      ["4. Differentiators", v("q4")],
+      ["5. Three things in 10s", joinLines(["q5_1","q5_2","q5_3"])],
+      ["6. Primary goal (≤3)", multi("q6", "q6_other")],
+      ["7. Measure success", v("q7")],
+      ["8. Primary audience", multi("q8", "q8_other")],
+      ["9. B2B / B2C", v("q9")],
+      ["10. Info each audience wants", v("q10")],
+      ["11. Describe after leaving", multi("q11", "q11_other")],
+      ["12. Misconceptions", v("q12")],
+      ["13. Section priorities", ratings()],
+      ["14. Missing sections", v("q14")],
+      ["15. Desired actions", multi("q15", "q15_other")],
+      ["16. Top CTA", v("q16")],
+      ["17. Importance of portfolio", v("q17")],
+      ["18. Project info", multi("q18", "q18_other")],
+      ["19. Content types", multi("q19")],
+      ["20. Manage content internally", v("q20")],
+      ["21. Functionality", multi("q21", "q21_other")],
+      ["22. Admired sites", joinLines(["q22_1","q22_2","q22_3"])],
+      ["23. Visual direction", multi("q23")],
+      ["24. Styles to avoid", v("q24")],
+      ["25. Existing assets", multi("q25")],
+      ["26. Integrations", v("q26")],
+      ["27. Target launch date", v("q27")],
+      ["28. Budget range", v("q28")],
+      ["29. Anything else", v("q29")]
+    ].map(([h, val]) => ({ h, v: val }));
+  }
+
+  // ---- Persistence (generic over form controls) ----
+  function snapshot() {
+    const fd = new FormData(form); const data = {};
+    for (const [k, val] of fd.entries()) {
+      if (data[k]) { if (!Array.isArray(data[k])) data[k] = [data[k]]; data[k].push(val); }
+      else data[k] = val;
+    }
+    return data;
+  }
+  let savedTimer;
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
+    const note = document.getElementById("savedNote");
+    note.textContent = "Saved ✓";
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(() => note.textContent = "Answers autosave in this browser.", 1200);
+  }
+  function load() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) { updateProgress(); return; }
+    let data; try { data = JSON.parse(raw); } catch { return; }
+    Object.entries(data).forEach(([k, val]) => {
+      const els = form.elements[k];
+      if (!els) return;
+      if (els.length && (els[0]?.type === "checkbox" || els[0]?.type === "radio")) {
+        const vals = Array.isArray(val) ? val : [val];
+        [...els].forEach(el => { el.checked = vals.includes(el.value); el.closest(".opt")?.classList.toggle("checked", el.checked); });
+      } else if (els.type === "checkbox" || els.type === "radio") {
+        els.checked = (els.value === val); els.closest(".opt")?.classList.toggle("checked", els.checked);
+      } else { els.value = val; }
+    });
+    updateProgress();
+  }
+  form.addEventListener("input", save);
+
+  // ---- Progress ----
+  function updateProgress() {
+    const fields = [...form.querySelectorAll("input[type=text], textarea")];
+    let filled = fields.filter(f => f.value.trim()).length, total = fields.length;
+    const radioGroups = new Set([...form.querySelectorAll("input[type=radio]")].map(r => r.name));
+    radioGroups.forEach(n => { total++; if (form.querySelector(`input[name="${n}"]:checked`)) filled++; });
+    document.getElementById("progressFill").style.width = Math.min(100, Math.round((filled / total) * 100)) + "%";
+  }
+
+  // ---- Submit to Google Sheets webhook ----
+  async function sendToSheet() {
+    const status = document.getElementById("sendStatus");
+    const btn = document.getElementById("submitBtn");
+    if (!SHEET_WEBHOOK_URL) { status.textContent = "Submission endpoint isn't configured yet."; return; }
+    const submittedAt = new Date().toISOString();
+    const payload = { columns: buildColumns(submittedAt), submittedAt };
+    btn.disabled = true; status.textContent = "Sending…";
+    try {
+      await fetch(SHEET_WEBHOOK_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+      status.textContent = "Submitted ✓ Thank you — we've received your answers.";
+      btn.textContent = "Submitted ✓";
+    } catch (e) { btn.disabled = false; status.textContent = "Couldn't reach the server. Please try again."; }
+  }
+
+  document.getElementById("submitBtn").addEventListener("click", sendToSheet);
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    if (!confirm("Clear all answers?")) return;
+    localStorage.removeItem(STORAGE_KEY); location.reload();
+  });
+
+  load();
+</script>
+</body>
+</html>
